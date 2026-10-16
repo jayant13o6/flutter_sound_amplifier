@@ -108,3 +108,13 @@ which walks through generating a keystore and wiring it into
 
 `minSdk 26` (Android 8.0) — required for the `microphone` foreground
 service type and the adaptive launcher icon used here.
+
+## Modes
+
+- **Phone → Earphones**: phone mic is played live into your Bluetooth earphones.
+- **Earphones → Phone**: your Bluetooth earphone's microphone is played on the
+  phone speaker. Bluetooth earphones only expose their mic through the call
+  profile (SCO), so audio is 16 kHz voice quality at best, and routing to the
+  phone speaker while a call-style connection is open depends on the phone.
+  Keep the phone away from the earphones to avoid feedback. Needs the
+  Bluetooth permission on Android 12+.

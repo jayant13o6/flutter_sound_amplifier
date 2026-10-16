@@ -7,12 +7,9 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * Bridges Flutter's UI to the native AmplifierService. All actual audio
- * capture/playback happens in the service, not here or in Dart -- this
- * class only forwards start/stop/gain commands as Intents. Because the
- * service is a foreground service started with startForegroundService, it
- * keeps running after this Activity (and even the Flutter engine) is
- * backgrounded or destroyed by the OS.
+ * Bridges Flutter's UI to the native AmplifierService. All audio work
+ * happens in the service; this only forwards start/stop/gain commands as
+ * Intents and reports whether the service is still running.
  */
 class MainActivity : FlutterActivity() {
     private val channelName = "soundamp/control"
@@ -24,9 +21,11 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "start" -> {
                         val gain = (call.argument<Double>("gain") ?: 1.0).toFloat()
+                        val mode = call.argument<String>("mode") ?: AmplifierService.MODE_PHONE_MIC
                         val intent = Intent(this, AmplifierService::class.java).apply {
                             action = AmplifierService.ACTION_START
                             putExtra(AmplifierService.EXTRA_GAIN, gain)
+                            putExtra(AmplifierService.EXTRA_MODE, mode)
                         }
                         startForegroundService(intent)
                         result.success(null)
@@ -47,6 +46,12 @@ class MainActivity : FlutterActivity() {
                         startService(intent)
                         result.success(null)
                     }
+                    "status" -> result.success(
+                        mapOf(
+                            "running" to AmplifierService.running,
+                            "error" to AmplifierService.lastError
+                        )
+                    )
                     else -> result.notImplemented()
                 }
             }
